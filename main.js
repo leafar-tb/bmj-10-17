@@ -68,7 +68,7 @@ class Obstacle {
 }
 
 function addObstacle() {
-  var track = Math.floor(Math.random() * (TRACKS)) +1;
+  var track = Math.floor(Math.random() * (TRACKS));
   var type = Math.floor(Math.random() * TYPES.length);
   OBSTACLES.push(new Obstacle(track, TYPES[type]));
 }
@@ -116,7 +116,8 @@ document.addEventListener('keydown', (event) => {
 const STREET_IMAGE = document.getElementById("road")
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
-        let imgX = - SCALE* STREET_IMAGE.width/2;
+        //TODO align speed with obstacles
+        let imgX = (- SCALE* STREET_IMAGE.width - new Date().getTime()/10) % (SCALE*STREET_IMAGE.width);
         let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {
             draw.drawImage(STREET_IMAGE, imgX, imgY, SCALE* STREET_IMAGE.width, SCALE* STREET_IMAGE.height);

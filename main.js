@@ -8,7 +8,13 @@ var Track = {
     size: 10
 }
 
-var TRACKS = 2;
+const TRACKS = 2;
+
+function getTrackY(trackId) {
+    return (trackId+1) / (TRACKS+1);
+}
+
+const SCALE = 4
 
 class Obstacle {
     constructor(track, type, size) {
@@ -16,11 +22,12 @@ class Obstacle {
         this.type = type;
         this.size = size;
         this.xPosition = 1.1;
-        this.yPosition = (track+1) / (TRACKS+1);
+        this.yPosition = getTrackY(track);
     }
 }
 
-const draw = document.getElementById("gameCanvas").getContext("2d");
+const canvas = document.getElementById("gameCanvas")
+const draw = canvas.getContext("2d");
 var running = true;
 var lastLoop = new Date().getTime();
 
@@ -29,7 +36,7 @@ async function waitForTime(timeStartFrame, frameTime) {
     await new Promise(resolve => {
         setTimeout(() => {
             resolve();
-        }, frameTime - (timeNow - timeStartFrame));
+        }, math.max(0, frameTime - (timeNow - timeStartFrame)));
     });
 }
 
@@ -48,8 +55,16 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
+const STREET_IMAGE = document.getElementById("road")
 function drawStreet() {
-    // TODO: implement
+	for (let track = 0; track < TRACKS; track++){
+        var imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
+        var imgX = - SCALE* STREET_IMAGE.width/2;
+        while(imgX < canvas.width) {
+            draw.drawImage(STREET_IMAGE, imgX, imgY, SCALE* STREET_IMAGE.width, SCALE* STREET_IMAGE.height);
+            imgX = imgX + SCALE* STREET_IMAGE.width;
+        }
+	}
 }
 
 function drawObstacles() {
@@ -68,7 +83,7 @@ async function mainloop () {
         lastLoop = timeStartFrame;
 
         // clear screen
-        draw.clearRect(-10, -10, 700, 700);
+        draw.clearRect(0, 0, 600, 600);
 
         drawStreet();
         drawObstacles();
@@ -79,4 +94,4 @@ async function mainloop () {
     }
 }
 
-mainloop();
+//mainloop();

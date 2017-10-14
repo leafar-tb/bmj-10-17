@@ -12,3 +12,7 @@ canvas {
   border-radius: 10px;
   cursor: pointer;
 }
+
+img {
+  display: none
+}

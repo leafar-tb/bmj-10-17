@@ -99,7 +99,12 @@ function moveObstacles() {
     for(obst of OBSTACLES){
         obst.move();
     }
-    // TODO check if off screen and remove
+    for(i in OBSTACLES) {
+        if(OBSTACLES[i].yPosition > -.05){
+            OBSTACLES.splice(0, i);
+            break;
+        }
+    }
 }
 
 function isCarCrashed() {
@@ -150,7 +155,6 @@ document.addEventListener('keydown', (event) => {
 
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
-        //TODO align speed with obstacles
         let imgX = (- SCALE* STREET_IMAGE.width - canvas.width*(new Date().getTime()/1000)/SPEED) % (SCALE*STREET_IMAGE.width);
         let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {

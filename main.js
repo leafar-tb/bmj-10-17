@@ -212,7 +212,8 @@ async function mainloop () {
     moveObstacles();
 
     // clear screen
-    draw.clearRect(0, 0, 600, 600);
+    draw.fillStyle = "#70634d"
+    draw.fillRect(0, 0, 600, 600);
     // render tracks, car, obstacles
     drawStreet();
     drawObstacles(ZLEVELS.BACK);

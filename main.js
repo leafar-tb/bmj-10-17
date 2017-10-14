@@ -1,5 +1,6 @@
 const SCALE = 4
 const FRAME_MILLIS = 30
+const SPEED = 8
 const STREET_IMAGE = document.getElementById("road")
 const CAR_STATES = {
     NORMAL: 0,
@@ -67,7 +68,7 @@ class Obstacle {
     }
 
     move() {
-        this.xPosition -= (FRAME_MILLIS/1000) / 8;
+        this.xPosition -= (FRAME_MILLIS/1000) / SPEED;
     }
 
     collidesWithCar() {
@@ -91,6 +92,7 @@ function moveObstacles() {
     for(obst of OBSTACLES){
         obst.move();
     }
+    // TODO check if off screen and remove
 }
 
 function isCarCrashed() {
@@ -140,7 +142,7 @@ document.addEventListener('keydown', (event) => {
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
         //TODO align speed with obstacles
-        let imgX = (- SCALE* STREET_IMAGE.width - new Date().getTime()/10) % (SCALE*STREET_IMAGE.width);
+        let imgX = (- SCALE* STREET_IMAGE.width - canvas.width*(new Date().getTime()/1000)/SPEED) % (SCALE*STREET_IMAGE.width);
         let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {
             draw.drawImage(STREET_IMAGE, imgX, imgY, SCALE* STREET_IMAGE.width, SCALE* STREET_IMAGE.height);

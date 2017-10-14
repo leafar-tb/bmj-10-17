@@ -6,7 +6,8 @@ const CAR_STATES = {
     NORMAL: 0,
     JUMP: 1,
     DOWN: 2,
-    SIDE: 3
+    SIDE: 3,
+    UPSIDEDOWN: 4
 }
 
 const carFlyTime = 2000;
@@ -15,7 +16,7 @@ let Car = {
     onTrack: 0,
     state: CAR_STATES.NORMAL,
     jumpingSince: 0,
-    lives: 10,
+    lives: 3,
     imgs: [
         document.getElementById("car1"),
         document.getElementById("car2")

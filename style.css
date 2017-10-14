@@ -5,12 +5,22 @@
   margin: 0 auto;
 }
 
-canvas {
+#gameCanvas {
   display: block;
   position: absolute;
   box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
   border-radius: 10px;
   cursor: pointer;
+  z-index: 0;
+}
+
+#obstaclesCanvas {
+  display: block;
+  position: absolute;
+  box-shadow: 5px 5px 5px rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 1;
 }
 
 img {

@@ -1,16 +1,31 @@
+const SCALE = 4
+const STREET_IMAGE = document.getElementById("road")
+const CAR_STATES = {
+    NORMAL: 0,
+    JUMP: 1,
+    DOWN: 2,
+    SIDE: 3
+}
+
+const carFlyTime = 2000;
+
 let Car = {
     onTrack: 0,
-    state: "normal", //jump, down, side, normal
+    state: CAR_STATES.NORMAL,
+    jumpingSince: 0,
     lives: 10,
     imgs: [
         document.getElementById("car1"),
         document.getElementById("car2")
     ],
+    jumpImg: document.getElementById("carJump"),
+    duckImg: document.getElementById("carDuck"),
     bobLoop: 0
 }
 
 let Track = {
-    size: 64
+    size: SCALE* STREET_IMAGE.height,
+    distance: this.size * 2
 }
 
 const TRACKS = 2;
@@ -18,7 +33,6 @@ function getTrackY(trackId) {
     return (trackId+1) / (TRACKS+1);
 }
 
-const SCALE = 4
 const FRAME_MILIS = 30
 
 class ObstacleType {
@@ -29,7 +43,7 @@ class ObstacleType {
     }
 }
 
-//TODO set proper sizes 
+//TODO set proper sizes
 const TYPES = [
     new ObstacleType("obstacleGround", 16, "jump"),
     new ObstacleType("obstacleUpBar", 16, "down"),
@@ -43,19 +57,20 @@ class Obstacle {
     constructor(track, type) {
         this.track = track;
         this.type = type;
+        this.size = size*SCALE;
         this.xPosition = 1.1;
         this.yPosition = getTrackY(track);
     }
 
     draw() {
         var img = this.type.image;
-        draw.drawImage(img, this.track*Track.size, this.track*Track.size, this.size, this.size);
+        draw.drawImage(img, this.xPosition * canvas.width, (this.yPosition *canvas.height)+(Track.size/2)-(img.height*SCALE), img.width*SCALE, img.height*SCALE);
     }
-    
+
     move() {
         this.xPosition -= (FRAME_MILIS/1000) / 8;
     }
-    
+
     collidesWithCar() {
         if(this.track != Car.onTrack)
             return false;
@@ -91,6 +106,8 @@ const canvas = document.getElementById("gameCanvas")
 const draw = canvas.getContext("2d");
 var running = true;
 
+const obstaclesCanvas = document.getElementById("obstaclesCanvas").getContext("2d");
+
 function handleLaneChange(event) {
     switch(event.key) {
         case 'w':
@@ -103,7 +120,10 @@ function handleLaneChange(event) {
 }
 
 function handleJump(event) {
-    // TODO: implement
+    if(Car.state == CAR_STATES.NORMAL & event.key == ' ') {
+        Car.state = CAR_STATES.JUMP;
+        Car.jumpingSince = new Date().getTime();
+    }
 }
 const handlers = [handleLaneChange, handleJump];
 // handle input events
@@ -113,7 +133,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-const STREET_IMAGE = document.getElementById("road")
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
         //TODO align speed with obstacles
@@ -133,14 +152,30 @@ function drawObstacles() {
 }
 
 function drawCar() {
-    let imgIndex;
+    let img;
     if(Car.bobLoop % 10 < 5) {
-        imgIndex = 0;
+        img = Car.imgs[0];
     } else {
-        imgIndex = 1;
+        img = Car.imgs[1];
     }
-    draw.drawImage(Car.imgs[imgIndex], 10*SCALE, getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2, SCALE * Car.imgs[0].width, SCALE * Car.imgs[0].height);
+
+    if(Car.state == CAR_STATES.JUMP) {
+        img = Car.jumpImg;
+    }
+
+    const jumpElapsed = new Date().getTime() - Car.jumpingSince
+    const jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/500, 2) + STREET_IMAGE.height);
+    const posX = 10*SCALE;
+    const posY = getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2 - Math.max(0, jumpHeight);
+    const scaleX = SCALE * Car.imgs[0].width;
+    const scaleY = SCALE * Car.imgs[0].height;
+
+    draw.drawImage(img, posX, posY, scaleX, scaleY);
     Car.bobLoop++;
+
+    if(new Date().getTime() > Car.jumpingSince + carFlyTime*2) {
+        Car.state = CAR_STATES.NORMAL;
+    }
 }
 
 async function mainloop () {
@@ -148,19 +183,18 @@ async function mainloop () {
     let timeStartFrame = new Date().getTime();
 
     moveObstacles();
-    // spawn obstacle approx every 20 frames
-    if( Math.random() < 1/20 ){
+    // spawn obstacle approx every 60 frames
+    if( Math.random() < 1/60 ){
         addObstacle();
     }
 
     // clear screen
     draw.clearRect(0, 0, 600, 600);
-    
     // render tracks, car, obstacles
     drawStreet();
     drawObstacles();
     drawCar();
-    
+
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
         draw.font="20px Georgia";

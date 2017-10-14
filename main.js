@@ -1,14 +1,14 @@
-var Car = {
+let Car = {
     onTrack: 0,
     state: "normal", //jump, down, side, normal
     lives: 10
 }
 
-var Track = {
+let Track = {
     size: 10
 }
 
-var TRACKS = 2;
+let TRACKS = 2;
 
 class Obstacle {
     constructor(track, type, size) {
@@ -21,8 +21,8 @@ class Obstacle {
 }
 
 const draw = document.getElementById("gameCanvas").getContext("2d");
-var running = true;
-var lastLoop = new Date().getTime();
+let running = true;
+let lastLoop = new Date().getTime();
 
 function waitForTime(timeStartFrame, frameTime) {
     let timeNow = new Date().getTime();

@@ -31,7 +31,7 @@ function getTrackY(trackId) {
 }
 
 const SCALE = 4
-const FRAME_MILIS = 30
+const FRAME_MILLIS = 30
 
 class ObstacleType {
     constructor(image, size, evadeState) {
@@ -65,7 +65,7 @@ class Obstacle {
     }
     
     move() {
-        this.xPosition -= (FRAME_MILIS/1000) / 8;
+        this.xPosition -= (FRAME_MILLIS/1000) / 8;
     }
     
     collidesWithCar() {
@@ -103,24 +103,30 @@ const canvas = document.getElementById("gameCanvas")
 const draw = canvas.getContext("2d");
 var running = true;
 
-function handleLaneChange(event) {
-    switch(event.key) {
-        case 'w':
-            Car.onTrack = Math.max(0, Car.onTrack-1);
-            break;
-        case 's':
-            Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
-            break;
+const handlers = [
+    function handleLaneChange(event) {
+        switch(event.key) {
+            case 'w':
+                Car.onTrack = Math.max(0, Car.onTrack-1);
+                break;
+            case 's':
+                Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
+                break;
+        }
+    },
+    function handleJump(event) {
+        if(Car.state == CAR_STATES.NORMAL & event.key == ' ') {
+            Car.state = CAR_STATES.JUMP;
+            Car.jumpingSince = new Date().getTime();
+        }
+    },
+    function handleDuck(event) {
+        if(Car.state == CAR_STATES.NORMAL & event.key == 'Enter') {
+            Car.state = CAR_STATES.DOWN;
+            Car.jumpingSince = new Date().getTime();
+        }
     }
-}
-
-function handleJump(event) {
-    if(Car.state == CAR_STATES.NORMAL & event.key == ' ') {
-        Car.state = CAR_STATES.JUMP;
-        Car.jumpingSince = new Date().getTime();
-    }
-}
-const handlers = [handleLaneChange, handleJump];
+];
 // handle input events
 document.addEventListener('keydown', (event) => {
     for (handler of handlers) {
@@ -158,10 +164,21 @@ function drawCar() {
         img = Car.jumpImg;
     }
 
-    const jumpElapsed = new Date().getTime() - Car.jumpingSince
-    const jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/500, 2) + STREET_IMAGE.height);
+    if(Car.state == CAR_STATES.DOWN) {
+        img = Car.duckImg;
+    }
+
+    let jumpElapsed = 0;
+    let jumpHeight = 0;
+    let wheelsOffset = 12;
+    if(Car.state == CAR_STATES.JUMP) {
+        jumpElapsed = new Date().getTime() - Car.jumpingSince
+        jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/500, 2) + STREET_IMAGE.height);
+    } else if (Car.state == CAR_STATES.DOWN) {
+        wheelsOffset = 4;
+    }
     const posX = 10*SCALE;
-    const posY = getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2 - Math.max(0, jumpHeight);
+    const posY = getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + wheelsOffset)/2 - Math.max(0, jumpHeight);
     const scaleX = SCALE * Car.imgs[0].width;
     const scaleY = SCALE * Car.imgs[0].height;
 
@@ -198,4 +215,4 @@ async function mainloop () {
     }
 }
 
-const LOOP = window.setInterval(mainloop, FRAME_MILIS);
+const LOOP = window.setInterval(mainloop, FRAME_MILLIS);

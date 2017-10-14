@@ -40,7 +40,7 @@ function getTrackY(trackId) {
 const ZLEVELS = {
     FRONT : 1,
     BACK : -1
-} 
+}
 
 class ObstacleType {
     constructor(image, size, evadeState, zCoord) {
@@ -134,7 +134,7 @@ const handlers = [
         }
     },
     function handleDuck(event) {
-        if(Car.state == CAR_STATES.NORMAL & event.key == 'Enter') {
+        if((Car.state == CAR_STATES.NORMAL || Car.state == CAR_STATES.DOWN) & event.key == 'Enter') {
             Car.state = CAR_STATES.DOWN;
             Car.jumpingSince = new Date().getTime();
         }
@@ -219,7 +219,7 @@ async function mainloop () {
     drawObstacles(ZLEVELS.BACK);
     drawCar();
     drawObstacles(ZLEVELS.FRONT);
-    
+
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
         window.clearInterval(SPAWN);

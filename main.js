@@ -10,7 +10,7 @@ const CAR_STATES = {
     UPSIDEDOWN: 4
 }
 
-const carFlyTime = 500;
+const carFlyTime = 750;
 
 let Car = {
     onTrack: 0,
@@ -40,7 +40,7 @@ function getTrackY(trackId) {
 const ZLEVELS = {
     FRONT : 1,
     BACK : -1
-} 
+}
 
 class ObstacleType {
     constructor(image, size, evadeState, zCoord) {
@@ -99,7 +99,12 @@ function moveObstacles() {
     for(obst of OBSTACLES){
         obst.move();
     }
-    // TODO check if off screen and remove
+    for(i in OBSTACLES) {
+        if(OBSTACLES[i].yPosition > -.05){
+            OBSTACLES.splice(0, i);
+            break;
+        }
+    }
 }
 
 function isCarCrashed() {
@@ -134,7 +139,7 @@ const handlers = [
         }
     },
     function handleDuck(event) {
-        if(Car.state == CAR_STATES.NORMAL & event.key == 'Enter') {
+        if((Car.state == CAR_STATES.NORMAL || Car.state == CAR_STATES.DOWN) & event.key == 'Enter') {
             Car.state = CAR_STATES.DOWN;
             Car.jumpingSince = new Date().getTime();
         }
@@ -155,7 +160,6 @@ document.addEventListener('keydown', (event) => {
 
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
-        //TODO align speed with obstacles
         let imgX = (- SCALE* STREET_IMAGE.width - canvas.width*(new Date().getTime()/1000)/SPEED) % (SCALE*STREET_IMAGE.width);
         let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {
@@ -221,7 +225,7 @@ async function mainloop () {
     drawObstacles(ZLEVELS.BACK);
     drawCar();
     drawObstacles(ZLEVELS.FRONT);
-    
+
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
         window.clearInterval(SPAWN);

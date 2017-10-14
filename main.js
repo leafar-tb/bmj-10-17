@@ -1,6 +1,6 @@
-const SCALE = 4
-const FRAME_MILLIS = 30
-const SPEED = 8
+const SCALE = 4;
+const FRAME_MILLIS = 30;
+const SPEED = 3;
 const STREET_IMAGE = document.getElementById("road")
 const CAR_STATES = {
     NORMAL: 0,

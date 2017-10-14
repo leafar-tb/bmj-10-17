@@ -1,3 +1,25 @@
+var Car = {
+    onTrack: 0,
+    state: "normal", //jump, down, side, normal
+    lives: 10
+}
+
+var Track = {
+    size: 10
+}
+
+var TRACKS = 2;
+
+class Obstacle {
+    constructor(track, type, size) {
+        this.track = track;
+        this.type = type;
+        this.size = size;
+        this.xPosition = 1.1;
+        this.yPosition = (track+1) / (TRACKS+1);
+    }
+}
+
 const draw = document.getElementById("gameCanvas").getContext("2d");
 var running = true;
 var lastLoop = new Date().getTime();

@@ -54,6 +54,9 @@ async function mainloop () {
         let timeStartFrame = new Date().getTime();
         let deltaTime = timeStartFrame - lastLoop;
         lastLoop = timeStartFrame;
+
+        // clear screen
+        draw.clearRect(-10, -10, 700, 700);
         
         // wait for next frame
         await waitForTime(timeStartFrame, 30);

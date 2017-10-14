@@ -1,25 +1,25 @@
-var gameCanvas = document.getElementById("gameCanvas");
-var draw = gameCanvas.getContext("2d");
+const draw = document.getElementById("gameCanvas").getContext("2d");
 var running = true;
 var lastLoop = new Date().getTime();
 
-function waitForTime(time) {
+function waitForTime(timeStartFrame, frameTime) {
+    let timeNow = new Date().getTime();
     return new Promise(resolve => {
         setTimeout(() => {
             resolve();
-        }, time);
+        }, frameTime - (timeNow - timeStartFrame));
     });
 }
 
 async function mainloop () {
     while(running) {
-        // do stuff
-        var currentTime = new Date().getTime();
-        var deltaTime = currentTime - lastLoop;
-        lastLoop = deltaTime;
+        // frame rate housekeeping
+        let timeStartFrame = new Date().getTime();
+        let deltaTime = timeStartFrame - lastLoop;
+        lastLoop = timeStartFrame;
         
         // wait for next frame
-        await waitForTime(30);
+        await waitForTime(timeStartFrame, 30);
     }
 }
 

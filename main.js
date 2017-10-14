@@ -8,7 +8,7 @@ const CAR_STATES = {
     SIDE: 3
 }
 
-const carFlyTime = 2000;
+const carFlyTime = 500;
 
 let Car = {
     onTrack: 0,
@@ -107,13 +107,15 @@ var running = true;
 
 const handlers = [
     function handleLaneChange(event) {
-        switch(event.key) {
-            case 'w':
-                Car.onTrack = Math.max(0, Car.onTrack-1);
-                break;
-            case 's':
-                Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
-                break;
+        if(Car.state == CAR_STATES.NORMAL){
+            switch(event.key) {
+                case 'w':
+                    Car.onTrack = Math.max(0, Car.onTrack-1);
+                    break;
+                case 's':
+                    Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
+                    break;
+            }
         }
     },
     function handleJump(event) {
@@ -176,7 +178,7 @@ function drawCar() {
     let wheelsOffset = 12;
     if(Car.state == CAR_STATES.JUMP) {
         jumpElapsed = new Date().getTime() - Car.jumpingSince
-        jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/500, 2) + STREET_IMAGE.height);
+        jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/100, 2) + STREET_IMAGE.height);
     } else if (Car.state == CAR_STATES.DOWN) {
         wheelsOffset = 4;
     }

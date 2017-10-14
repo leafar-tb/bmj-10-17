@@ -36,15 +36,6 @@ const canvas = document.getElementById("gameCanvas")
 const draw = canvas.getContext("2d");
 var running = true;
 
-async function waitForTime(timeStartFrame, frameTime) {
-    let timeNow = new Date().getTime();
-    await new Promise(resolve => {
-        setTimeout(() => {
-            resolve();
-        }, Math.max(0, frameTime - (timeNow - timeStartFrame)));
-    });
-}
-
 function handleLaneChange(event) {
     // TODO: implement
 }
@@ -81,25 +72,22 @@ function drawCar() {
 }
 
 async function mainloop () {
-    while(running) {
-        // frame rate housekeeping
-        let timeStartFrame = new Date().getTime();
+    // frame rate housekeeping
+    let timeStartFrame = new Date().getTime();
 
-        // clear screen
-        draw.clearRect(0, 0, 600, 600);
-        
-        // do stuff
-        addObstacle();
+    // clear screen
+    draw.clearRect(0, 0, 600, 600);
+    
+    // do stuff
+    addObstacle();
 
-        // render tracks, car, obstacles
-        drawStreet();
-        drawObstacles();
-        drawCar();
-
-        // wait for next frame
-        waitForTime(timeStartFrame, 30);
-    }
+    // render tracks, car, obstacles
+    drawStreet();
+    drawObstacles();
+    drawCar();
 }
+
+window.setInterval(mainloop, 30);
 
 function addObstacle() {
   var track = Math.floor(Math.random() * (TRACKS)) +1;

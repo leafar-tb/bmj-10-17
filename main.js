@@ -1,3 +1,6 @@
+const SCALE = 4
+const FRAME_MILLIS = 30
+const STREET_IMAGE = document.getElementById("road")
 const CAR_STATES = {
     NORMAL: 0,
     JUMP: 1,
@@ -22,7 +25,8 @@ let Car = {
 }
 
 let Track = {
-    size: 64
+    size: SCALE* STREET_IMAGE.height,
+    distance: this.size * 2
 }
 
 const TRACKS = 2;
@@ -30,8 +34,6 @@ function getTrackY(trackId) {
     return (trackId+1) / (TRACKS+1);
 }
 
-const SCALE = 4
-const FRAME_MILLIS = 30
 
 class ObstacleType {
     constructor(image, size, evadeState) {
@@ -41,11 +43,11 @@ class ObstacleType {
     }
 }
 
-//TODO set proper sizes 
+//TODO set proper sizes
 const TYPES = [
-    new ObstacleType("obstacleGround", 16, "jump"),
-    new ObstacleType("obstacleUpBar", 16, "down"),
-    new ObstacleType("obstacleWall", 16, null)
+    new ObstacleType("obstacleGround", 16, CAR_STATES.JUMP),
+    new ObstacleType("obstacleUpBar", 16, CAR_STATES.DOWN),
+    new ObstacleType("obstacleWall", 16, -1)
 ]
 
 //global pool
@@ -61,26 +63,26 @@ class Obstacle {
 
     draw() {
         var img = this.type.image;
-        draw.drawImage(img, this.track*Track.size, this.track*Track.size, this.size, this.size);
+        draw.drawImage(img, this.xPosition * canvas.width, (this.yPosition *canvas.height)+(Track.size/2)-(img.height*SCALE), img.width*SCALE, img.height*SCALE);
     }
-    
+
     move() {
         this.xPosition -= (FRAME_MILLIS/1000) / 8;
     }
-    
+
     collidesWithCar() {
         if(this.track != Car.onTrack)
             return false;
         if(this.type.evadeState == Car.state)
             return false;
-        if(this.xPosition < .1) //TODO adapt to obstacle+car dimension
+        if(this.xPosition < .1 && this.xPosition > 0) //TODO adapt to obstacle+car dimension
             return true;
         return false;
     }
 }
 
 function addObstacle() {
-  var track = Math.floor(Math.random() * (TRACKS)) +1;
+  var track = Math.floor(Math.random() * (TRACKS));
   var type = Math.floor(Math.random() * TYPES.length);
   OBSTACLES.push(new Obstacle(track, TYPES[type]));
 }
@@ -127,6 +129,7 @@ const handlers = [
         }
     }
 ];
+const obstaclesCanvas = document.getElementById("obstaclesCanvas").getContext("2d");
 // handle input events
 document.addEventListener('keydown', (event) => {
     for (handler of handlers) {
@@ -134,10 +137,10 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-const STREET_IMAGE = document.getElementById("road")
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
-        let imgX = - SCALE* STREET_IMAGE.width/2;
+        //TODO align speed with obstacles
+        let imgX = (- SCALE* STREET_IMAGE.width - new Date().getTime()/10) % (SCALE*STREET_IMAGE.width);
         let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {
             draw.drawImage(STREET_IMAGE, imgX, imgY, SCALE* STREET_IMAGE.width, SCALE* STREET_IMAGE.height);
@@ -195,24 +198,21 @@ async function mainloop () {
     let timeStartFrame = new Date().getTime();
 
     moveObstacles();
-    // spawn obstacle approx every 20 frames
-    if( Math.random() < 1/20 ){
-        addObstacle();
-    }
 
     // clear screen
     draw.clearRect(0, 0, 600, 600);
-    
     // render tracks, car, obstacles
     drawStreet();
     drawObstacles();
     drawCar();
-    
+
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
+        window.clearInterval(SPAWN);
         draw.font="20px Georgia";
         draw.strokeText("Game Over!", 10, 50);
     }
 }
 
+const SPAWN = window.setInterval(addObstacle, 60*FRAME_MILLIS);
 const LOOP = window.setInterval(mainloop, FRAME_MILLIS);

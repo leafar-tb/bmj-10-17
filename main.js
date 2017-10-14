@@ -1,14 +1,25 @@
 const SCALE = 4
 const STREET_IMAGE = document.getElementById("road")
+const CAR_STATES = {
+    NORMAL: 0,
+    JUMP: 1,
+    DOWN: 2,
+    SIDE: 3
+}
+
+const carFlyTime = 2000;
 
 let Car = {
     onTrack: 0,
-    state: "normal", //jump, down, side, normal
+    state: CAR_STATES.NORMAL,
+    jumpingSince: 0,
     lives: 10,
     imgs: [
         document.getElementById("car1"),
         document.getElementById("car2")
     ],
+    jumpImg: document.getElementById("carJump"),
+    duckImg: document.getElementById("carDuck"),
     bobLoop: 0
 }
 
@@ -23,13 +34,27 @@ function getTrackY(trackId) {
 }
 
 const FRAME_MILIS = 30
-const TYPES = ["obstacleGround", "obstacleWall", "obstacleUpBar"]; //obstacle types
+
+class ObstacleType {
+    constructor(image, size, evadeState) {
+        this.image = document.getElementById(image);
+        this.size = size;
+        this.evadeState = evadeState;
+    }
+}
+
+//TODO set proper sizes
+const TYPES = [
+    new ObstacleType("obstacleGround", 16, "jump"),
+    new ObstacleType("obstacleUpBar", 16, "down"),
+    new ObstacleType("obstacleWall", 16, null)
+]
 
 //global pool
 var OBSTACLES = []
 
 class Obstacle {
-    constructor(track, type, size) {
+    constructor(track, type) {
         this.track = track;
         this.type = type;
         this.size = size*SCALE;
@@ -38,28 +63,43 @@ class Obstacle {
     }
 
     draw() {
-        var img = document.getElementById(this.type);
+        var img = this.type.image;
         draw.drawImage(img, this.xPosition * canvas.width, (this.yPosition *canvas.height)+(Track.size/2)-(img.height*SCALE), img.width*SCALE, img.height*SCALE);
     }
 
     move() {
         this.xPosition -= (FRAME_MILIS/1000) / 8;
     }
+
+    collidesWithCar() {
+        if(this.track != Car.onTrack)
+            return false;
+        if(this.type.evadeState == Car.state)
+            return false;
+        if(this.xPosition < .1) //TODO adapt to obstacle+car dimension
+            return true;
+        return false;
+    }
 }
 
 function addObstacle() {
   var track = Math.floor(Math.random() * (TRACKS));
   var type = Math.floor(Math.random() * TYPES.length);
-  var size = 16;//TODO randomize?
-
-  var obstacle = new Obstacle(track, TYPES[type], size);
-  OBSTACLES.push(obstacle);
+  OBSTACLES.push(new Obstacle(track, TYPES[type]));
 }
 
 function moveObstacles() {
     for(obst of OBSTACLES){
         obst.move();
     }
+}
+
+function isCarCrashed() {
+    for(obst of OBSTACLES) {
+        if(obst.collidesWithCar())
+            return true;
+    }
+    return false;
 }
 
 const canvas = document.getElementById("gameCanvas")
@@ -80,7 +120,10 @@ function handleLaneChange(event) {
 }
 
 function handleJump(event) {
-    // TODO: implement
+    if(Car.state == CAR_STATES.NORMAL & event.key == ' ') {
+        Car.state = CAR_STATES.JUMP;
+        Car.jumpingSince = new Date().getTime();
+    }
 }
 const handlers = [handleLaneChange, handleJump];
 // handle input events
@@ -108,14 +151,30 @@ function drawObstacles() {
 }
 
 function drawCar() {
-    let imgIndex;
+    let img;
     if(Car.bobLoop % 10 < 5) {
-        imgIndex = 0;
+        img = Car.imgs[0];
     } else {
-        imgIndex = 1;
+        img = Car.imgs[1];
     }
-    draw.drawImage(Car.imgs[imgIndex], 10*SCALE, getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2, SCALE * Car.imgs[0].width, SCALE * Car.imgs[0].height);
+
+    if(Car.state == CAR_STATES.JUMP) {
+        img = Car.jumpImg;
+    }
+
+    const jumpElapsed = new Date().getTime() - Car.jumpingSince
+    const jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/500, 2) + STREET_IMAGE.height);
+    const posX = 10*SCALE;
+    const posY = getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2 - Math.max(0, jumpHeight);
+    const scaleX = SCALE * Car.imgs[0].width;
+    const scaleY = SCALE * Car.imgs[0].height;
+
+    draw.drawImage(img, posX, posY, scaleX, scaleY);
     Car.bobLoop++;
+
+    if(new Date().getTime() > Car.jumpingSince + carFlyTime*2) {
+        Car.state = CAR_STATES.NORMAL;
+    }
 }
 
 async function mainloop () {
@@ -135,6 +194,11 @@ async function mainloop () {
     drawObstacles();
     drawCar();
 
+    if(isCarCrashed()) {
+        window.clearInterval(LOOP);
+        draw.font="20px Georgia";
+        draw.strokeText("Game Over!", 10, 50);
+    }
 }
 
-window.setInterval(mainloop, FRAME_MILIS);
+const LOOP = window.setInterval(mainloop, FRAME_MILIS);

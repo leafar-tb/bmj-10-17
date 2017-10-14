@@ -34,9 +34,9 @@ const draw = document.getElementById("gameCanvas").getContext("2d");
 var running = true;
 var lastLoop = new Date().getTime();
 
-function waitForTime(timeStartFrame, frameTime) {
+async function waitForTime(timeStartFrame, frameTime) {
     let timeNow = new Date().getTime();
-    return new Promise(resolve => {
+    await new Promise(resolve => {
         setTimeout(() => {
             resolve();
         }, frameTime - (timeNow - timeStartFrame));
@@ -53,10 +53,22 @@ function handleJump(event) {
 const handlers = [handleLaneChange, handleJump];
 // handle input events
 document.addEventListener('keydown', (event) => {
-    for (handler in handlers) {
+    for (handler of handlers) {
         handler(event);
     }
 });
+
+function drawStreet() {
+    // TODO: implement
+}
+
+function drawObstacles() {
+    // TODO: implement
+}
+
+function drawCar() {
+    // TODO: implement
+}
 
 async function mainloop () {
     while(running) {
@@ -73,8 +85,15 @@ async function mainloop () {
       // clear screen
       draw.clearRect(-10, -10, 700, 700);
 
-      // wait for next frame
-      await waitForTime(timeStartFrame, 30);
+        // clear screen
+        draw.clearRect(-10, -10, 700, 700);
+
+        drawStreet();
+        drawObstacles();
+        drawCar();
+
+        // wait for next frame
+        waitForTime(timeStartFrame, 30);
     }
 }
 

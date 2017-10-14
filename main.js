@@ -6,10 +6,6 @@ let Car = {
         document.getElementById("car1"),
         document.getElementById("car2")
     ],
-    imgDimension: {
-        width: 50,
-        height: 25
-    },
     bobLoop: 0
 }
 
@@ -46,10 +42,13 @@ const draw = canvas.getContext("2d");
 var running = true;
 
 function handleLaneChange(event) {
-    if(event.key == 'w') {
-        Car.onTrack = Math.max(0, Car.onTrack-1);
-    } else if(event.key == 's') {
-        Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
+    switch(event.key) {
+        case 'w':
+            Car.onTrack = Math.max(0, Car.onTrack-1);
+            break;
+        case 's':
+            Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
+            break;
     }
 }
 
@@ -81,14 +80,13 @@ function drawObstacles() {
 }
 
 function drawCar() {
-    // TODO: implement
     let imgIndex;
     if(Car.bobLoop % 10 < 5) {
         imgIndex = 0;
     } else {
         imgIndex = 1;
     }
-    draw.drawImage(Car.imgs[imgIndex], 10*SCALE, getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgDimension.height + 12)/2, SCALE * Car.imgDimension.width, SCALE * Car.imgDimension.height);
+    draw.drawImage(Car.imgs[imgIndex], 10*SCALE, getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2, SCALE * Car.imgs[0].width, SCALE * Car.imgs[0].height);
     Car.bobLoop++;
 }
 

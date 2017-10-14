@@ -15,7 +15,7 @@ function getTrackY(trackId) {
 
 const SCALE = 4
 
-var TYPES = ["obstacleGround", "obstacleGround", "obstacleGround"]; //obstacle types
+var TYPES = ["obstacleGround", "obstacleWall", "obstacleUpBar"]; //obstacle types
 
 class Obstacle {
     constructor(track, type, size) {
@@ -27,18 +27,14 @@ class Obstacle {
     }
 
     draw() {
-      img = new Image();
-      img.src = 'images/' + this.type + '.png';
-      img.onload = function(){
+        var img = document.getElementById(this.type);
         draw.drawImage(img, this.track*Track.size, this.track*Track.size, this.size, this.size);
-      }
     }
 }
 
 const canvas = document.getElementById("gameCanvas")
 const draw = canvas.getContext("2d");
 var running = true;
-var lastLoop = new Date().getTime();
 
 async function waitForTime(timeStartFrame, frameTime) {
     let timeNow = new Date().getTime();
@@ -86,22 +82,16 @@ function drawCar() {
 
 async function mainloop () {
     while(running) {
-      // frame rate housekeeping
-      let timeStartFrame = new Date().getTime();
-      let deltaTime = timeStartFrame - lastLoop;
-      lastLoop = timeStartFrame;
-
-      // do stuff
-      // render tracks, car, obstacles
-      addObstacle();
-      var currentTime = new Date().getTime();
-      lastLoop = deltaTime;
-      // clear screen
-      draw.clearRect(-10, -10, 700, 700);
+        // frame rate housekeeping
+        let timeStartFrame = new Date().getTime();
 
         // clear screen
         draw.clearRect(0, 0, 600, 600);
+        
+        // do stuff
+        addObstacle();
 
+        // render tracks, car, obstacles
         drawStreet();
         drawObstacles();
         drawCar();

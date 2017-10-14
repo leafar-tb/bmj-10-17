@@ -24,9 +24,9 @@ const draw = document.getElementById("gameCanvas").getContext("2d");
 var running = true;
 var lastLoop = new Date().getTime();
 
-function waitForTime(timeStartFrame, frameTime) {
+async function waitForTime(timeStartFrame, frameTime) {
     let timeNow = new Date().getTime();
-    return new Promise(resolve => {
+    await new Promise(resolve => {
         setTimeout(() => {
             resolve();
         }, frameTime - (timeNow - timeStartFrame));
@@ -75,7 +75,7 @@ async function mainloop () {
         drawCar();
         
         // wait for next frame
-        await waitForTime(timeStartFrame, 30);
+        waitForTime(timeStartFrame, 30);
     }
 }
 

@@ -1,11 +1,23 @@
+const CAR_STATES = {
+    NORMAL: 0,
+    JUMP: 1,
+    DOWN: 2,
+    SIDE: 3
+}
+
+const carFlyTime = 2000;
+
 let Car = {
     onTrack: 0,
-    state: "normal", //jump, down, side, normal
+    state: CAR_STATES.NORMAL,
+    jumpingSince: 0,
     lives: 10,
     imgs: [
         document.getElementById("car1"),
         document.getElementById("car2")
     ],
+    jumpImg: document.getElementById("carJump"),
+    duckImg: document.getElementById("carDuck"),
     bobLoop: 0
 }
 
@@ -75,7 +87,10 @@ function handleLaneChange(event) {
 }
 
 function handleJump(event) {
-    // TODO: implement
+    if(Car.state == CAR_STATES.NORMAL & event.key == ' ') {
+        Car.state = CAR_STATES.JUMP;
+        Car.jumpingSince = new Date().getTime();
+    }
 }
 const handlers = [handleLaneChange, handleJump];
 // handle input events
@@ -104,14 +119,30 @@ function drawObstacles() {
 }
 
 function drawCar() {
-    let imgIndex;
+    let img;
     if(Car.bobLoop % 10 < 5) {
-        imgIndex = 0;
+        img = Car.imgs[0];
     } else {
-        imgIndex = 1;
+        img = Car.imgs[1];
     }
-    draw.drawImage(Car.imgs[imgIndex], 10*SCALE, getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2, SCALE * Car.imgs[0].width, SCALE * Car.imgs[0].height);
+
+    if(Car.state == CAR_STATES.JUMP) {
+        img = Car.jumpImg;
+    }
+
+    const jumpElapsed = new Date().getTime() - Car.jumpingSince
+    const jumpHeight = 7.5*(-Math.pow((carFlyTime - jumpElapsed)/500, 2) + STREET_IMAGE.height);
+    const posX = 10*SCALE;
+    const posY = getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgs[0].height + 12)/2 - Math.max(0, jumpHeight);
+    const scaleX = SCALE * Car.imgs[0].width;
+    const scaleY = SCALE * Car.imgs[0].height;
+
+    draw.drawImage(img, posX, posY, scaleX, scaleY);
     Car.bobLoop++;
+
+    if(new Date().getTime() > Car.jumpingSince + carFlyTime*2) {
+        Car.state = CAR_STATES.NORMAL;
+    }
 }
 
 async function mainloop () {

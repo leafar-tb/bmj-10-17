@@ -1,7 +1,16 @@
 let Car = {
     onTrack: 0,
     state: "normal", //jump, down, side, normal
-    lives: 10
+    lives: 10,
+    imgs: [
+        document.getElementById("car1"),
+        document.getElementById("car2")
+    ],
+    imgDimension: {
+        width: 50,
+        height: 25
+    },
+    bobLoop: 0
 }
 
 let Track = {
@@ -37,7 +46,11 @@ const draw = canvas.getContext("2d");
 var running = true;
 
 function handleLaneChange(event) {
-    // TODO: implement
+    if(event.key == 'w') {
+        Car.onTrack = Math.max(0, Car.onTrack-1);
+    } else if(event.key == 's') {
+        Car.onTrack = Math.min(Car.onTrack+1, TRACKS-1);
+    }
 }
 
 function handleJump(event) {
@@ -54,8 +67,8 @@ document.addEventListener('keydown', (event) => {
 const STREET_IMAGE = document.getElementById("road")
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
-        var imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
-        var imgX = - SCALE* STREET_IMAGE.width/2;
+        let imgX = - SCALE* STREET_IMAGE.width/2;
+        let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {
             draw.drawImage(STREET_IMAGE, imgX, imgY, SCALE* STREET_IMAGE.width, SCALE* STREET_IMAGE.height);
             imgX = imgX + SCALE* STREET_IMAGE.width;
@@ -69,6 +82,14 @@ function drawObstacles() {
 
 function drawCar() {
     // TODO: implement
+    let imgIndex;
+    if(Car.bobLoop % 10 < 5) {
+        imgIndex = 0;
+    } else {
+        imgIndex = 1;
+    }
+    draw.drawImage(Car.imgs[imgIndex], 10*SCALE, getTrackY(Car.onTrack)*canvas.height - SCALE * (Car.imgDimension.height + 12)/2, SCALE * Car.imgDimension.width, SCALE * Car.imgDimension.height);
+    Car.bobLoop++;
 }
 
 async function mainloop () {

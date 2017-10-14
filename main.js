@@ -33,6 +33,21 @@ function waitForTime(timeStartFrame, frameTime) {
     });
 }
 
+function handleLaneChange(event) {
+    // TODO: implement
+}
+
+function handleJump(event) {
+    // TODO: implement
+}
+const handlers = [handleLaneChange, handleJump];
+// handle input events
+document.addEventListener('keydown', (event) => {
+    for (handler in handlers) {
+        handler(event);
+    }
+});
+
 async function mainloop () {
     while(running) {
         // frame rate housekeeping

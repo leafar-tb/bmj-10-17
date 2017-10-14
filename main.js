@@ -19,8 +19,11 @@ function getTrackY(trackId) {
 }
 
 const SCALE = 4
+const FRAME_MILIS = 30
+const TYPES = ["obstacleGround", "obstacleWall", "obstacleUpBar"]; //obstacle types
 
-var TYPES = ["obstacleGround", "obstacleWall", "obstacleUpBar"]; //obstacle types
+//global pool
+var OBSTACLES = []
 
 class Obstacle {
     constructor(track, type, size) {
@@ -34,6 +37,25 @@ class Obstacle {
     draw() {
         var img = document.getElementById(this.type);
         draw.drawImage(img, this.track*Track.size, this.track*Track.size, this.size, this.size);
+    }
+    
+    move() {
+        this.xPosition -= (FRAME_MILIS/1000) / 8;
+    }
+}
+
+function addObstacle() {
+  var track = Math.floor(Math.random() * (TRACKS)) +1;
+  var type = Math.floor(Math.random() * TYPES.length);
+  var size = 16;//TODO randomize?
+
+  var obstacle = new Obstacle(track, TYPES[type], size);
+  OBSTACLES.push(obstacle);
+}
+
+function moveObstacles() {
+    for(obst of OBSTACLES){
+        obst.move();
     }
 }
 
@@ -76,7 +98,9 @@ function drawStreet() {
 }
 
 function drawObstacles() {
-    // TODO: implement
+    for(obst of OBSTACLES){
+        obst.draw();
+    }
 }
 
 function drawCar() {
@@ -94,25 +118,19 @@ async function mainloop () {
     // frame rate housekeeping
     let timeStartFrame = new Date().getTime();
 
+    moveObstacles();
+    // spawn obstacle approx every 20 frames
+    if( Math.random() < 1/20 ){
+        addObstacle();
+    }
+
     // clear screen
     draw.clearRect(0, 0, 600, 600);
     
-    // do stuff
-    addObstacle();
-
     // render tracks, car, obstacles
     drawStreet();
     drawObstacles();
     drawCar();
 }
 
-window.setInterval(mainloop, 30);
-
-function addObstacle() {
-  var track = Math.floor(Math.random() * (TRACKS)) +1;
-  var type = Math.floor(Math.random() * 2);
-  var size = 16;//TODO randomize?
-
-  var obstacle = new Obstacle(track, TYPES[type], size);
-  obstacle.draw();
-}
+window.setInterval(mainloop, FRAME_MILIS);

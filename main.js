@@ -150,7 +150,6 @@ const handlers = [
         }
     }
 ];
-const obstaclesCanvas = document.getElementById("obstaclesCanvas").getContext("2d");
 // handle input events
 document.addEventListener('keydown', (event) => {
     for (handler of handlers) {

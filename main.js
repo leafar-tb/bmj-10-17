@@ -1,3 +1,6 @@
+const SCALE = 4
+const STREET_IMAGE = document.getElementById("road")
+
 let Car = {
     onTrack: 0,
     state: "normal", //jump, down, side, normal
@@ -5,7 +8,8 @@ let Car = {
 }
 
 let Track = {
-    size: 64
+    size: SCALE* STREET_IMAGE.height,
+    distance: this.size * 2
 }
 
 const TRACKS = 2;
@@ -13,7 +17,6 @@ function getTrackY(trackId) {
     return (trackId+1) / (TRACKS+1);
 }
 
-const SCALE = 4
 
 var TYPES = ["obstacleGround", "obstacleWall", "obstacleUpBar"]; //obstacle types
 
@@ -28,13 +31,15 @@ class Obstacle {
 
     draw() {
         var img = document.getElementById(this.type);
-        draw.drawImage(img, this.track*Track.size, this.track*Track.size, this.size, this.size);
+        draw.drawImage(img, this.xPosition * canvas.width, (this.yPosition *canvas.height)-(Track.size/2), this.size, this.size);
     }
 }
 
 const canvas = document.getElementById("gameCanvas")
 const draw = canvas.getContext("2d");
 var running = true;
+
+const obstaclesCanvas = document.getElementById("obstaclesCanvas").getContext("2d");
 
 function handleLaneChange(event) {
     // TODO: implement
@@ -51,7 +56,6 @@ document.addEventListener('keydown', (event) => {
     }
 });
 
-const STREET_IMAGE = document.getElementById("road")
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
         var imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
@@ -64,7 +68,7 @@ function drawStreet() {
 }
 
 function drawObstacles() {
-    // TODO: implement
+    addObstacle();
 }
 
 function drawCar() {
@@ -77,7 +81,7 @@ async function mainloop () {
 
     // clear screen
     draw.clearRect(0, 0, 600, 600);
-    
+
     // do stuff
     addObstacle();
 
@@ -85,14 +89,16 @@ async function mainloop () {
     drawStreet();
     drawObstacles();
     drawCar();
+
 }
 
 window.setInterval(mainloop, 30);
 
 function addObstacle() {
+    // TODO make sure obstacles are not too near to each other - add big enough margin
   var track = Math.floor(Math.random() * (TRACKS)) +1;
   var type = Math.floor(Math.random() * 2);
-  var size = 16;//TODO randomize?
+  var size = 64;//TODO randomize?
 
   var obstacle = new Obstacle(track, TYPES[type], size);
   obstacle.draw();

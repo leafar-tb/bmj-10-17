@@ -45,9 +45,9 @@ class ObstacleType {
 
 //TODO set proper sizes
 const TYPES = [
-    new ObstacleType("obstacleGround", 16, "jump"),
-    new ObstacleType("obstacleUpBar", 16, "down"),
-    new ObstacleType("obstacleWall", 16, null)
+    new ObstacleType("obstacleGround", 16, CAR_STATES.JUMP),
+    new ObstacleType("obstacleUpBar", 16, CAR_STATES.DOWN),
+    new ObstacleType("obstacleWall", 16, -1)
 ]
 
 //global pool
@@ -57,7 +57,6 @@ class Obstacle {
     constructor(track, type) {
         this.track = track;
         this.type = type;
-        this.size = size*SCALE;
         this.xPosition = 1.1;
         this.yPosition = getTrackY(track);
     }
@@ -76,7 +75,7 @@ class Obstacle {
             return false;
         if(this.type.evadeState == Car.state)
             return false;
-        if(this.xPosition < .1) //TODO adapt to obstacle+car dimension
+        if(this.xPosition < .1 && this.xPosition > 0) //TODO adapt to obstacle+car dimension
             return true;
         return false;
     }
@@ -183,10 +182,6 @@ async function mainloop () {
     let timeStartFrame = new Date().getTime();
 
     moveObstacles();
-    // spawn obstacle approx every 60 frames
-    if( Math.random() < 1/60 ){
-        addObstacle();
-    }
 
     // clear screen
     draw.clearRect(0, 0, 600, 600);
@@ -197,9 +192,11 @@ async function mainloop () {
 
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
+        window.clearInterval(SPAWN);
         draw.font="20px Georgia";
         draw.strokeText("Game Over!", 10, 50);
     }
 }
 
+const SPAWN = window.setInterval(addObstacle, 60*FRAME_MILIS);
 const LOOP = window.setInterval(mainloop, FRAME_MILIS);

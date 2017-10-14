@@ -1,6 +1,6 @@
 const SCALE = 4;
 const FRAME_MILLIS = 30;
-const SPEED = 3;
+let SPEED = 3;
 const STREET_IMAGE = document.getElementById("road")
 const CAR_STATES = {
     NORMAL: 0,
@@ -138,6 +138,11 @@ const handlers = [
             Car.state = CAR_STATES.DOWN;
             Car.jumpingSince = new Date().getTime();
         }
+    },
+    function handleAcceleration(event){
+        if(SPEED > 1 && event.key == 'Backspace') {
+            SPEED*=.9;
+        }
     }
 ];
 const obstaclesCanvas = document.getElementById("obstaclesCanvas").getContext("2d");
@@ -206,9 +211,6 @@ function drawCar() {
 }
 
 async function mainloop () {
-    // frame rate housekeeping
-    let timeStartFrame = new Date().getTime();
-
     moveObstacles();
 
     // clear screen

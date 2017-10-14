@@ -10,7 +10,7 @@ const CAR_STATES = {
     UPSIDEDOWN: 4
 }
 
-const carFlyTime = 500;
+const carFlyTime = 750;
 
 let Car = {
     onTrack: 0,

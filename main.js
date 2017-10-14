@@ -24,43 +24,71 @@ function getTrackY(trackId) {
 
 const SCALE = 4
 const FRAME_MILIS = 30
-const TYPES = ["obstacleGround", "obstacleWall", "obstacleUpBar"]; //obstacle types
+
+class ObstacleType {
+    constructor(image, size, evadeState) {
+        this.image = document.getElementById(image);
+        this.size = size;
+        this.evadeState = evadeState;
+    }
+}
+
+//TODO set proper sizes 
+const TYPES = [
+    new ObstacleType("obstacleGround", 16, "jump"),
+    new ObstacleType("obstacleUpBar", 16, "down"),
+    new ObstacleType("obstacleWall", 16, null)
+]
 
 //global pool
 var OBSTACLES = []
 
 class Obstacle {
-    constructor(track, type, size) {
+    constructor(track, type) {
         this.track = track;
         this.type = type;
-        this.size = size;
         this.xPosition = 1.1;
         this.yPosition = getTrackY(track);
     }
 
     draw() {
-        var img = document.getElementById(this.type);
+        var img = this.type.image;
         draw.drawImage(img, this.track*Track.size, this.track*Track.size, this.size, this.size);
     }
     
     move() {
         this.xPosition -= (FRAME_MILIS/1000) / 8;
     }
+    
+    collidesWithCar() {
+        if(this.track != Car.onTrack)
+            return false;
+        if(this.type.evadeState == Car.state)
+            return false;
+        if(this.xPosition < .1) //TODO adapt to obstacle+car dimension
+            return true;
+        return false;
+    }
 }
 
 function addObstacle() {
   var track = Math.floor(Math.random() * (TRACKS)) +1;
   var type = Math.floor(Math.random() * TYPES.length);
-  var size = 16;//TODO randomize?
-
-  var obstacle = new Obstacle(track, TYPES[type], size);
-  OBSTACLES.push(obstacle);
+  OBSTACLES.push(new Obstacle(track, TYPES[type]));
 }
 
 function moveObstacles() {
     for(obst of OBSTACLES){
         obst.move();
     }
+}
+
+function isCarCrashed() {
+    for(obst of OBSTACLES) {
+        if(obst.collidesWithCar())
+            return true;
+    }
+    return false;
 }
 
 const canvas = document.getElementById("gameCanvas")
@@ -133,6 +161,12 @@ async function mainloop () {
     drawStreet();
     drawObstacles();
     drawCar();
+    
+    if(isCarCrashed()) {
+        window.clearInterval(LOOP);
+        draw.font="20px Georgia";
+        draw.strokeText("Game Over!", 10, 50);
+    }
 }
 
-window.setInterval(mainloop, FRAME_MILIS);
+const LOOP = window.setInterval(mainloop, FRAME_MILIS);

@@ -1,11 +1,13 @@
 const SCALE = 4
 const FRAME_MILLIS = 30
+const SPEED = 8
 const STREET_IMAGE = document.getElementById("road")
 const CAR_STATES = {
     NORMAL: 0,
     JUMP: 1,
     DOWN: 2,
-    SIDE: 3
+    SIDE: 3,
+    UPSIDEDOWN: 4
 }
 
 const carFlyTime = 500;
@@ -14,7 +16,7 @@ let Car = {
     onTrack: 0,
     state: CAR_STATES.NORMAL,
     jumpingSince: 0,
-    lives: 10,
+    lives: 3,
     imgs: [
         document.getElementById("car1"),
         document.getElementById("car2")
@@ -29,25 +31,31 @@ let Track = {
     distance: this.size * 2
 }
 
-const TRACKS = 2;
+const TRACKS = 4;
 function getTrackY(trackId) {
     return (trackId+1) / (TRACKS+1);
 }
 
 
+const ZLEVELS = {
+    FRONT : 1,
+    BACK : -1
+} 
+
 class ObstacleType {
-    constructor(image, size, evadeState) {
+    constructor(image, size, evadeState, zCoord) {
         this.image = document.getElementById(image);
         this.size = size;
         this.evadeState = evadeState;
+        this.zCoord = zCoord
     }
 }
 
 //TODO set proper sizes
 const TYPES = [
-    new ObstacleType("obstacleGround", 16, CAR_STATES.JUMP),
-    new ObstacleType("obstacleUpBar", 16, CAR_STATES.DOWN),
-    new ObstacleType("obstacleWall", 16, -1)
+    new ObstacleType("obstacleGround", 16, CAR_STATES.JUMP, ZLEVELS.BACK),
+    new ObstacleType("obstacleUpBar", 16, CAR_STATES.DOWN, ZLEVELS.FRONT),
+    new ObstacleType("obstacleWall", 16, -1, ZLEVELS.FRONT)
 ]
 
 //global pool
@@ -67,7 +75,7 @@ class Obstacle {
     }
 
     move() {
-        this.xPosition -= (FRAME_MILLIS/1000) / 8;
+        this.xPosition -= (FRAME_MILLIS/1000) / SPEED;
     }
 
     collidesWithCar() {
@@ -91,6 +99,7 @@ function moveObstacles() {
     for(obst of OBSTACLES){
         obst.move();
     }
+    // TODO check if off screen and remove
 }
 
 function isCarCrashed() {
@@ -142,7 +151,7 @@ document.addEventListener('keydown', (event) => {
 function drawStreet() {
 	for (let track = 0; track < TRACKS; track++){
         //TODO align speed with obstacles
-        let imgX = (- SCALE* STREET_IMAGE.width - new Date().getTime()/10) % (SCALE*STREET_IMAGE.width);
+        let imgX = (- SCALE* STREET_IMAGE.width - canvas.width*(new Date().getTime()/1000)/SPEED) % (SCALE*STREET_IMAGE.width);
         let imgY = getTrackY(track) * canvas.height - SCALE* STREET_IMAGE.height/2;
         while(imgX < canvas.width) {
             draw.drawImage(STREET_IMAGE, imgX, imgY, SCALE* STREET_IMAGE.width, SCALE* STREET_IMAGE.height);
@@ -151,9 +160,10 @@ function drawStreet() {
 	}
 }
 
-function drawObstacles() {
+function drawObstacles(z) {
     for(obst of OBSTACLES){
-        obst.draw();
+        if(obst.type.zCoord == z)
+            obst.draw();
     }
 }
 
@@ -205,9 +215,10 @@ async function mainloop () {
     draw.clearRect(0, 0, 600, 600);
     // render tracks, car, obstacles
     drawStreet();
-    drawObstacles();
+    drawObstacles(ZLEVELS.BACK);
     drawCar();
-
+    drawObstacles(ZLEVELS.FRONT);
+    
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
         window.clearInterval(SPAWN);

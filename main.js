@@ -30,25 +30,31 @@ let Track = {
     distance: this.size * 2
 }
 
-const TRACKS = 2;
+const TRACKS = 4;
 function getTrackY(trackId) {
     return (trackId+1) / (TRACKS+1);
 }
 
 
+const ZLEVELS = {
+    FRONT : 1,
+    BACK : -1
+} 
+
 class ObstacleType {
-    constructor(image, size, evadeState) {
+    constructor(image, size, evadeState, zCoord) {
         this.image = document.getElementById(image);
         this.size = size;
         this.evadeState = evadeState;
+        this.zCoord = zCoord
     }
 }
 
 //TODO set proper sizes
 const TYPES = [
-    new ObstacleType("obstacleGround", 16, CAR_STATES.JUMP),
-    new ObstacleType("obstacleUpBar", 16, CAR_STATES.DOWN),
-    new ObstacleType("obstacleWall", 16, -1)
+    new ObstacleType("obstacleGround", 16, CAR_STATES.JUMP, ZLEVELS.BACK),
+    new ObstacleType("obstacleUpBar", 16, CAR_STATES.DOWN, ZLEVELS.FRONT),
+    new ObstacleType("obstacleWall", 16, -1, ZLEVELS.FRONT)
 ]
 
 //global pool
@@ -151,9 +157,10 @@ function drawStreet() {
 	}
 }
 
-function drawObstacles() {
+function drawObstacles(z) {
     for(obst of OBSTACLES){
-        obst.draw();
+        if(obst.type.zCoord == z)
+            obst.draw();
     }
 }
 
@@ -205,9 +212,10 @@ async function mainloop () {
     draw.clearRect(0, 0, 600, 600);
     // render tracks, car, obstacles
     drawStreet();
-    drawObstacles();
+    drawObstacles(ZLEVELS.BACK);
     drawCar();
-
+    drawObstacles(ZLEVELS.FRONT);
+    
     if(isCarCrashed()) {
         window.clearInterval(LOOP);
         window.clearInterval(SPAWN);
